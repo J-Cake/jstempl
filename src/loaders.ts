@@ -21,12 +21,18 @@ export const loaders: Record<string, (text: string) => string> = {
 
 export const functions: Record<string, (tag: { tagName: string, hasBody: boolean, attributes: { [x in string]: string }, children?: OutNestedToken }, env: { [key in string]: any }) => AsyncGenerator<string>> = {
     async *include(tag, env) {
-        if (!('file' in tag.attributes))
-            throw `Required attribute 'file' not present on include`;
-        const file = await fs.readFile(tag.attributes.file, 'utf8');
+        if ('content_type' in tag.attributes && tag.attributes.content_type !== 'text/jsml') {
+            const file = await fs.readFile(tag.attributes.file, 'utf8');
 
-        for await (const i of compile(parseJSML('\n' + file.trim()), _.merge({}, tag.attributes, env)))
-            yield i;
+            yield loaders[tag.attributes.content_type](file);
+        } else {
+            if (!('file' in tag.attributes))
+                throw `Required attribute 'file' not present on include`;
+            const file = await fs.readFile(tag.attributes.file, 'utf8');
+
+            for await (const i of compile(parseJSML('\n' + file.trim()), _.merge({}, tag.attributes, env)))
+                yield i;
+        }
     },
     async *render(tag) {
         return [];
