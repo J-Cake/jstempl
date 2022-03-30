@@ -1,8 +1,8 @@
 {
-    "name": "_team_name_undecided_",
+    "name": "jstempl",
     "type": "module",
     "main": "build/template.js",
-    "version": "v0.0.2",
+    "version": "v0.0.3",
     "scripts": {
         "build": "esbuild src/esm.ts --bundle --sourcemap --outfile=build/template.js --format=esm --platform=node --external:markdown-it",
         "build:standalone": "esbuild src/cjs.ts --bundle --sourcemap --outfile=build/template-standalone.cjs --platform=node",
