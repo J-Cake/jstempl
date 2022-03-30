@@ -1,0 +1,29 @@
+name: learn-github-actions
+on:
+  pull_request:
+    branches:
+      - master
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "17"
+      - run: npm install
+      - run: npx tsc
+      - run: npm run build:standalone
+      - uses: actions/upload-artifact@v3
+        with:
+          name: template.js
+          path: build/template-standalone.cjs
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          title: "Template"
+          prerelease: false
+          files: |
+            build/template-standalone.cjs

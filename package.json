@@ -1,0 +1,21 @@
+{
+    "name": "_team_name_undecided_",
+    "type": "module",
+    "main": "build/template.js",
+    "scripts": {
+        "build": "esbuild src/esm.ts --bundle --sourcemap --outfile=build/template.js --format=esm --platform=node --external:markdown-it",
+        "build:standalone": "esbuild src/cjs.ts --bundle --sourcemap --outfile=build/template-standalone.cjs --platform=node",
+        "template": "node --enable-source-maps=true build/template-standalone.cjs"
+    },
+    "dependencies": {
+        "lodash": "latest",
+        "markdown-it": "latest"
+    },
+    "devDependencies": {
+        "@types/lodash": "latest",
+        "@types/node": "latest",
+        "@types/markdown-it": "latest",
+        "esbuild": "latest",
+        "typescript": "latest"
+    }
+}

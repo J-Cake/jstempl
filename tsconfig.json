@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "sourceMap": true,
+        "noEmit": true,
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "rootDir": "src",
+        "outDir": "build/ts",
+        "declaration": true,
+        "declarationDir": "build/lib",
+    },
+    "exclude": ["build", "node_modules"]
+}
