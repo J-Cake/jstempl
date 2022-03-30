@@ -131,7 +131,7 @@ export async function* compile(jsml: NestedToken, variables: { [name: string]: a
             if ('type' in i)
                 if (isTag(i))
                     if (i.body.tagName.startsWith("$") && i.body.tagName.slice(1) in functions)
-                        yield* concatIterator([indent], functions[i.body.tagName.slice(1)](i.body, glob));
+                        yield* concatIterator([indent], functions[i.body.tagName.slice(1)]({ ...i.body, attributes: _.mapValues(i.body.attributes, i => attr(i)) }, glob));
                     else if (i.body.hasBody && 'children' in i.body)
                         yield* concatIterator([indent, `<${i.body.tagName}${evalAttr(i.body.attributes)}>`], render(i.body.children, depth + 1), [indent, `</${i.body.tagName}>`]);
                     else
