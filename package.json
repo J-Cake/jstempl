@@ -1,5 +1,5 @@
 {
-    "name": "_team_name_undecided_",
+    "name": "jstempl",
     "type": "module",
     "main": "build/template.js",
     "version": "v0.0.5",

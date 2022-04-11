@@ -128,22 +128,24 @@ export async function* compile(jsml: NestedToken, variables: { [name: string]: a
         const indent = '';
 
         for (const i of jsml)
-            if ('type' in i)
-                if (isTag(i))
-                    if (i.body.tagName.startsWith("$") && i.body.tagName.slice(1) in functions)
-                        yield* concatIterator([indent], functions[i.body.tagName.slice(1)](i.body, glob));
-                    else if (i.body.hasBody && 'children' in i.body)
-                        yield* concatIterator([indent, `<${i.body.tagName}${evalAttr(i.body.attributes)}>`], render(i.body.children, depth + 1), [indent, `</${i.body.tagName}>`]);
-                    else
-                        yield `${indent}<${i.body.tagName}${evalAttr(i.body.attributes)} />`;
-                else if (isText(i))
-                    yield `${indent}${renderTextComponent(i.body)}`;
-                else if (isExpr(i))
-                    yield `${indent}${evaluate(i.body, glob)}`;
-                else if (isJSML(i))
-                    yield* concatIterator([indent], render(fold(i.body), depth + 1));
-                else { }
-            else yield* concatIterator([indent], render(i, depth + 1));
+            if (i)
+                if ('type' in i)
+                    if (isTag(i))
+                        if (i.body.tagName.startsWith("$") && i.body.tagName.slice(1) in functions)
+                            yield* concatIterator([indent], functions[i.body.tagName.slice(1)]({ ...i.body, attributes: _.mapValues(i.body.attributes, i => attr(i)) }, glob));
+                        else if (i.body.hasBody && 'children' in i.body)
+                            yield* concatIterator([indent, `<${i.body.tagName}${evalAttr(i.body.attributes)}>`], render(i.body.children, depth + 1), [indent, `</${i.body.tagName}>`]);
+                        else
+                            yield `${indent}<${i.body.tagName}${evalAttr(i.body.attributes)} />`;
+                    else if (isText(i))
+                        yield `${indent}${renderTextComponent(i.body)}`;
+                    else if (isExpr(i))
+                        yield `${indent}${evaluate(i.body, glob)}`;
+                    else if (isJSML(i))
+                        yield* concatIterator([indent], render(fold(i.body), depth + 1));
+                    else { }
+                else yield* concatIterator([indent], render(i, depth + 1));
+            else console.warn(`Empty token: ${i}`);
     }
 
     for await (const i of render(fold(jsml)))
