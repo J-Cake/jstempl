@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 import parseJSML, { compile, OutNestedToken } from './build';
 
-const md = markdown({ linkify: true });
+const md = markdown({ linkify: false, typographer: true, html: true, xhtmlOut: true, breaks: true, langPrefix: '', quotes: '“”‘’' });
 
 export const loaders: Record<string, (text: string) => string> = {
     'text/html': text => text,
