@@ -1,13 +1,15 @@
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
+import util from 'node:util';
 import markdown from 'markdown-it';
 import _ from 'lodash';
+import Iter, * as iter from 'jcake-utils/iter';
 
 import parseJSML, { compile, OutNestedToken } from './build';
 
 const md = markdown({ linkify: false, typographer: true, html: true, xhtmlOut: true, breaks: true, langPrefix: '', quotes: '“”‘’' });
 
-export const loaders: Record<string, (text: string) => string> = {
+export const loaders: Record<string, (text: string) => Promise<string> | string> = {
     'text/html': text => text,
     'text/css': text => text,
     'text/md': text => md.render(text),
@@ -16,8 +18,13 @@ export const loaders: Record<string, (text: string) => string> = {
     'text/html+md': text => md.render(text),
     'text/javascript': text => text,
     'text/js': text => text,
-    'text/js+node': text => evaluate(text, {})
+    async 'text/js+node'(this: vm.Context, text: string) {
+        return await Iter(vm.runInContext(`(async function*() {${text}})()`, this)).collect().then(res => res.map(i => typeof i !== 'string' ? util.inspect(i, false, 4, false) : i).join('<br/>'));
+    }
 }
+
+export type ctx = vm.Context;
+export const evaluate = (expr: string, ctx: vm.Context) => vm.runInContext(expr, ctx);
 
 export const functions: Record<string, (tag: { tagName: string, hasBody: boolean, attributes: { [x in string]: string }, children?: OutNestedToken }, env: { [key in string]: any }) => AsyncGenerator<string>> = {
     async *include(tag, env) {
@@ -34,23 +41,23 @@ export const functions: Record<string, (tag: { tagName: string, hasBody: boolean
 }
 
 export const global = {
+    methods: {
+        get: 'GET',
+        post: 'POST',
+        put: 'PUT',
+        delete: 'DELETE'
+    },
     renderMd: text => md.render(text),
 };
 
-export function evaluate(text: string, variables: { [name: string]: any }): string {
-    const out: string[] = [];
-
-    // const glob = _.merge({ echo: text => void out.push(text) }, variables, global);
+export function createContext(variables: { [name: string]: any }): vm.Context {
     const glob = {
         ...variables,
         ...global,
-        echo: text => void out.push(text),
         glob: (name: string, value: any) => global[name] = value,
-    }
-    const context = vm.createContext(glob);
+        console,
+        process
+    };
 
-    const script = new vm.Script(text);
-    out.push(script.runInContext(context));
-
-    return out.filter(i => i).join('\n').trim();
+    return vm.createContext(glob);
 }

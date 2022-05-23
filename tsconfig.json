@@ -5,6 +5,7 @@
         "sourceMap": true,
         "noEmit": true,
         "moduleResolution": "Node",
+        "resolveJsonModule": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "rootDir": "src",

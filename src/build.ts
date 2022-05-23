@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { loaders, functions, global, evaluate } from './loaders';
+import { loaders, functions, global, createContext, evaluate, ctx } from './loaders';
 import { collect, collectSync, concatIterator, isExpr, isJSML, isTag, isText, peekableIterator } from './util';
 
 export type Token<T> = {
@@ -74,8 +74,11 @@ export default function parseJSML(jsml: string): NestedToken {
                     };
             }
 
-        if (!token)
-            throw `Invalid JSML: ${jsml.slice(index)}`;
+        if (!token) {
+            index += Math.max(1, jsml.slice(index).split(/\W/)[0].length); // skip whitespace
+            // console.error(`Invalid JSML: ${jsml.slice(index).split(/\w/).shift()}`);
+            continue;
+        }
 
         tokens.add(token);
         index += token.length;
@@ -85,23 +88,24 @@ export default function parseJSML(jsml: string): NestedToken {
     return tokens;
 }
 
-export function renderTextComponent(text: string): string {
+export async function renderTextComponent(text: string, ctx: ctx): Promise<string> {
     const [mime, ...body] = text.split(/\s/);
 
     if (mime.trim() in loaders && body.length > 0)
-        return loaders[mime.trim()](text.slice(mime.length));
+        return await loaders[mime.trim()].bind(ctx)(text.slice(mime.length));
 
     return text;
 }
 
 export async function* compile(jsml: NestedToken, variables: { [name: string]: any }): AsyncGenerator<string> {
     const glob = _.merge({}, variables, global);
+    const ctx = createContext(variables);
 
     if (!jsml)
         return ``;
 
     // TODO: Replace with bracket-matched version
-    const attr = (attr: string): string => attr.replace(/\$\{([^}]+)\}/g, (_, expr) => evaluate(expr, glob));
+    const attr = (attr: string): string => attr.replace(/\$\{([^}]+)\}/g, (_, expr) => evaluate(expr, ctx));
     const evalAttr = (attributes: { [attr in string]: string }) => _.chain(attributes).mapValues((value, key) => ` ${key}="${attr(value)}"`).values().value().join('');
 
     const fold = function* (jsml: NestedToken | Token<any>): Generator<Token<any> | OutNestedToken> {
@@ -128,22 +132,23 @@ export async function* compile(jsml: NestedToken, variables: { [name: string]: a
         const indent = '';
 
         for (const i of jsml)
-            if ('type' in i)
-                if (isTag(i))
-                    if (i.body.tagName.startsWith("$") && i.body.tagName.slice(1) in functions)
-                        yield* concatIterator([indent], functions[i.body.tagName.slice(1)](i.body, glob));
-                    else if (i.body.hasBody && 'children' in i.body)
-                        yield* concatIterator([indent, `<${i.body.tagName}${evalAttr(i.body.attributes)}>`], render(i.body.children, depth + 1), [indent, `</${i.body.tagName}>`]);
-                    else
-                        yield `${indent}<${i.body.tagName}${evalAttr(i.body.attributes)} />`;
-                else if (isText(i))
-                    yield `${indent}${renderTextComponent(i.body)}`;
-                else if (isExpr(i))
-                    yield `${indent}${evaluate(i.body, glob)}`;
-                else if (isJSML(i))
-                    yield* concatIterator([indent], render(fold(i.body), depth + 1));
-                else { }
-            else yield* concatIterator([indent], render(i, depth + 1));
+            if (i)
+                if ('type' in i)
+                    if (isTag(i))
+                        if (i.body.tagName.startsWith("$") && i.body.tagName.slice(1) in functions)
+                            yield* concatIterator([indent], functions[i.body.tagName.slice(1)](i.body, glob));
+                        else if (i.body.hasBody && 'children' in i.body)
+                            yield* concatIterator([indent, `<${i.body.tagName}${evalAttr(i.body.attributes)}>`], render(i.body.children, depth + 1), [indent, `</${i.body.tagName}>`]);
+                        else
+                            yield `${indent}<${i.body.tagName}${evalAttr(i.body.attributes)} />`;
+                    else if (isText(i))
+                        yield `${indent}${await renderTextComponent(i.body, ctx)}`;
+                    else if (isExpr(i))
+                        yield `${indent}${evaluate(i.body, ctx)}`;
+                    else if (isJSML(i))
+                        yield* concatIterator([indent], render(fold(i.body), depth + 1));
+                    else { }
+                else yield* concatIterator([indent], render(i, depth + 1));
     }
 
     for await (const i of render(fold(jsml)))

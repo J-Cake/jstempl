@@ -1,16 +1,23 @@
 {
-    "name": "_team_name_undecided_",
+    "name": "jstempl",
     "type": "module",
     "main": "build/template.js",
-    "version": "v0.0.5",
+    "version": "v1.0.1",
     "scripts": {
         "build": "esbuild src/esm.ts --bundle --sourcemap --outfile=build/template.js --format=esm --platform=node --external:markdown-it",
         "build:standalone": "esbuild src/cjs.ts --bundle --sourcemap --outfile=build/template-standalone.cjs --platform=node",
+        "build:srv": "esbuild src/srv/srv.ts --bundle --sourcemap --splitting --outdir=build/ --format=esm --platform=node --external:markdown-it --banner:js='#!/usr/bin/env node'",
         "template": "node --enable-source-maps=true build/template-standalone.cjs"
+    },
+    "bin": {
+        "nhp": "build/srv.js",
+        "template": "build/template.js"
     },
     "dependencies": {
         "lodash": "latest",
-        "markdown-it": "latest"
+        "markdown-it": "latest",
+        "chalk": "latest",
+        "jcake-utils": "git://github.com/J-Cake/jcake-utils.git"
     },
     "devDependencies": {
         "@types/lodash": "latest",

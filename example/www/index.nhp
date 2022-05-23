@@ -1,0 +1,7 @@
+$use template = '../include/template.jsml' {
+    section id = 'body' {
+        p [text/js+node
+            yield 'Hello';
+        ]
+    }
+}

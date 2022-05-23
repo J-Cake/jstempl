@@ -1,0 +1,9 @@
+[<!DOCTYPE html>]
+html {
+    head {
+        title [Hello World]
+    }
+    body {
+        $include page = '${page}' content_type = '${content_type ?? 'text/jsml'}';
+    }
+}
