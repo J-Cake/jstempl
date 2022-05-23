@@ -1,6 +1,9 @@
 import _ from 'lodash';
+import Iter, * as iter from 'jcake-utils/iter';
+import IterSync, * as iterSync from 'jcake-utils/iterSync';
+
 import { loaders, functions, global, createContext, evaluate, ctx } from './loaders';
-import { collect, collectSync, concatIterator, isExpr, isJSML, isTag, isText, peekableIterator } from './util';
+import { isExpr, isJSML, isTag, isText, peekableIterator } from './util';
 
 export type Token<T> = {
     type: string;
@@ -27,7 +30,7 @@ export function bracketCount(source: string, open: string, close: string): { bod
     throw new Error(`Bracket mismatch`);
 }
 
-export default function parseJSML(jsml: string): NestedToken {
+export default function parseJSML(jsml: string, origin?: string): NestedToken {
     const tokens: NestedToken = new Set();
 
     const matchers: Record<string, (src: string) => { body: any, length: number }> = {
@@ -35,7 +38,7 @@ export default function parseJSML(jsml: string): NestedToken {
             const jsml = bracketCount(source, '{', '}');
 
             if (jsml)
-                return { body: parseJSML(jsml.body), length: jsml.length };
+                return { body: parseJSML(jsml.body, origin), length: jsml.length };
             return null;
         },
         text: source => bracketCount(source, '[', ']'),
@@ -56,7 +59,9 @@ export default function parseJSML(jsml: string): NestedToken {
                 body: {
                     tagName: tag_match[2],
                     hasBody: !tag_match[1].endsWith(';'),
-                    attributes: _.chain(collectSync(tag_match[1].matchAll(attrs), i => [i.groups.attr, i.groups.value.slice(1, -1)] as [attr: string, value: string]))
+                    attributes: _.chain(IterSync(tag_match[1].matchAll(attrs))
+                        .map(i => [i.groups.attr, i.groups.value.slice(1, -1)] as [attr: string, value: string])
+                        .collect())
                         .fromPairs()
                         .value()
                 },
@@ -119,7 +124,7 @@ export async function* compile(jsml: NestedToken, variables: { [name: string]: a
                         length: i.length,
                         body: {
                             ...i.body,
-                            children: [...fold(skip())]
+                            children: (depth: number = 0) => iter.collect(render(fold(skip()), depth))
                         }
                     }
                 else yield* fold(i);
@@ -136,9 +141,10 @@ export async function* compile(jsml: NestedToken, variables: { [name: string]: a
                 if ('type' in i)
                     if (isTag(i))
                         if (i.body.tagName.startsWith("$") && i.body.tagName.slice(1) in functions)
-                            yield* concatIterator([indent], functions[i.body.tagName.slice(1)](i.body, glob));
+                            yield* iter.concat([indent], functions[i.body.tagName.slice(1)](i.body, glob));
                         else if (i.body.hasBody && 'children' in i.body)
-                            yield* concatIterator([indent, `<${i.body.tagName}${evalAttr(i.body.attributes)}>`], render(i.body.children, depth + 1), [indent, `</${i.body.tagName}>`]);
+                            for (const j of iterSync.concat([`${indent}<${i.body.tagName}${evalAttr(i.body.attributes)}>`], await i.body.children(depth + 1), [`${indent}</${i.body.tagName}>`]))
+                                yield j;
                         else
                             yield `${indent}<${i.body.tagName}${evalAttr(i.body.attributes)} />`;
                     else if (isText(i))
@@ -146,9 +152,9 @@ export async function* compile(jsml: NestedToken, variables: { [name: string]: a
                     else if (isExpr(i))
                         yield `${indent}${evaluate(i.body, ctx)}`;
                     else if (isJSML(i))
-                        yield* concatIterator([indent], render(fold(i.body), depth + 1));
+                        yield* iter.concat([indent], render(fold(i.body), depth + 1));
                     else { }
-                else yield* concatIterator([indent], render(i, depth + 1));
+                else yield* iter.concat([indent], render(i, depth + 1));
     }
 
     for await (const i of render(fold(jsml)))

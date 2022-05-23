@@ -4,6 +4,8 @@ html {
         title [Hello World]
     }
     body {
-        $include page = '${page}' content_type = '${content_type ?? 'text/jsml'}';
+        h1 [Hi]
+
+        [text/js+node yield* body]
     }
 }

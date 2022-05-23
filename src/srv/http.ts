@@ -14,7 +14,7 @@ const { default: jstempl, compile } = await import('../build');
 
 export async function resolve(path: string, roots: string[]): Promise<string> {
     if (!path)
-        return null;
+        throw `Path is empty`;
 
     const segments = path.split(/[\/\\]/).filter(i => i && i.length > 0 && i !== '.');
 
@@ -54,22 +54,18 @@ export default async function serve(config: Config): Promise<http.Server> {
         const url = new urllib.URL(req.url, 'http://localhost');
         res.on('finish', () => console.log(`${chalk.yellow(new Date().toISOString())} ${chalk.green(req.method)} ${chalk.yellow(res.statusCode)} ${chalk.blue(url.pathname)}`));
 
-        // todo: collect body
         const body = config.doNotParseBody ? await iter.collect(req).then(res => res.join('')) : await collect(req, req.headers['content-type'] as string);
 
         let path = await resolve(url.pathname, config.roots);
 
         const cookies = _.fromPairs(req.headers.cookie.split(';').map(i => i.split('=')));
 
-        if (!path)
-            path = await resolve(config.errors?.[res.statusCode = 404], config.roots);
-
         if (path)
             try {
                 res.writeHead(200, { 'content-type': Mime[path.trim().split('.').pop().toLowerCase()] ?? 'text/plain', cookies: Object.entries(cookies).map(i => i.join('=')).join(',') });
 
                 if (['jsml', 'nhp'].includes(path?.split('.').pop().toLowerCase()))
-                    Stream.Readable.from(compile(jstempl(await fs.readFile(path, 'utf8')), {
+                    return Stream.Readable.from(compile(jstempl(await fs.readFile(path, 'utf8')), {
                         method: req.method.toUpperCase(),
                         path: url.pathname,
                         query: url.searchParams,
@@ -78,18 +74,30 @@ export default async function serve(config: Config): Promise<http.Server> {
                         body: body ?? null,
                     })).pipe(res);
                 else if (path)
-                    fss.createReadStream(path).pipe(res);
-                else
-                    res.writeHead(404, { 'Content-Type': 'text/plain' }).end('404: Not found');
+                    return fss.createReadStream(path).pipe(res);
+
             } catch (err) {
-                res.writeHead(500, { 'Content-type': 'text/plain' });
-                if (err instanceof Error)
-                    res.end(`${err.name}: ${err.message}`);
-                else
-                    res.end(err.toString());
+                let _500: string = config?.errors[500] ? await resolve(config?.errors[500], config.roots) : null;
+                if (_500)
+                    return Stream.Readable.from(compile(jstempl(await fs.readFile(_500, 'utf8')), { err })).pipe(res.writeHead(500, { 'Content-Type': 'text/plain' }));
+                else {
+                    res.writeHead(500, { 'Content-type': 'text/plain' });
+                    if (err instanceof Error)
+                        res.end(`${err.name}: ${err.message}`);
+                    else
+                        res.end(err.toString());
+                }
             }
-        else
-            res.writeHead(404, { 'Content-Type': 'text/plain' }).end('404: Not found');
+
+        else if (config?.errors[404]) {
+            const _404 = await resolve(config?.errors[404], config.roots);
+            if (_404)
+                return Stream.Readable.from(compile(jstempl(await fs.readFile(_404, 'utf8')), {})).pipe(res.writeHead(404, { 'Content-Type': 'text/plain' }));
+            else
+                return res.writeHead(404, { 'Content-Type': 'text/plain' }).end('404: Not found');
+        }
+
+        res.writeHead(404, { 'Content-Type': 'text/plain' }).end('404: Not found');
 
     }).listen(config.port, () => console.log(chalk.green(`Server listening on port ${chalk.yellow(config.port)}`)));
 }

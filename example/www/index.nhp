@@ -1,7 +1,8 @@
-$use template = '../include/template.jsml' {
+[]
+$use template = 'example/include/template.jsml' {
     section id = 'body' {
         p [text/js+node
-            yield 'Hello';
+            yield 'Hello World';
         ]
     }
 }

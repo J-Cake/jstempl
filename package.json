@@ -14,15 +14,15 @@
         "template": "build/template.js"
     },
     "dependencies": {
-        "lodash": "latest",
-        "markdown-it": "latest",
         "chalk": "latest",
-        "jcake-utils": "git://github.com/J-Cake/jcake-utils.git"
+        "jcake-utils": "github:J-Cake/jcake-utils",
+        "lodash": "latest",
+        "markdown-it": "latest"
     },
     "devDependencies": {
         "@types/lodash": "latest",
-        "@types/node": "latest",
         "@types/markdown-it": "latest",
+        "@types/node": "latest",
         "esbuild": "latest",
         "typescript": "latest"
     }

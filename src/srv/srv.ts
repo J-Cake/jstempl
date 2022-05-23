@@ -51,6 +51,7 @@ export const config: Config = {
     roots: (!args.roots || args.roots.length <= 0) ? [process.cwd()] : args.roots,
     port: (!args.port || args.port < 1024) ? (args.key && args.cert) ? 443 : 80 : args.port,
     useChildPrerenderer: args.useChildPrerenderer,
+    errors: {},
     doNotParseBody: false,
     key: args.key,
     cert: args.cert
