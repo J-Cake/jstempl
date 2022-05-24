@@ -7,6 +7,7 @@ export type Config = {
     port: number,
     useChildPrerenderer: boolean,
     doNotParseBody: boolean,
+    markdownTemplate: string,
     key?: Buffer,
     cert?: Buffer,
     errors?: {
@@ -42,8 +43,19 @@ while (argv.length > 0) {
         case '--no-parse-body':
             args.doNotParseBody = true;
             break;
+        case '--markdown':
+            args.markdownTemplate = argv.shift();
+            break;
+            
         default:
-            args.roots = (args.roots ?? []).concat(arg.split(','));
+            if (args[0] == 'to') {
+                argv.shift();
+                const origin = argv.shift();
+                args.roots = [...args.roots ?? [], new Proxy<String>(arg, {
+                    get: (target, prop) => prop == 'origin' ? origin : target[prop]
+                }) as string]
+            } else args.roots = [...args.roots ?? [], arg];
+            
     }
 }
 
@@ -52,7 +64,8 @@ export const config: Config = {
     port: (!args.port || args.port < 1024) ? (args.key && args.cert) ? 443 : 80 : args.port,
     useChildPrerenderer: args.useChildPrerenderer,
     errors: {},
-    doNotParseBody: false,
+    doNotParseBody: args.doNotParseBody,
+    markdownTemplate: args.markdownTemplate,
     key: args.key,
     cert: args.cert
 };

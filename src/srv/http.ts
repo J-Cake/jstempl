@@ -4,6 +4,7 @@ import { Stream, Readable } from 'node:stream';
 import urllib from 'node:url';
 import chalk from 'chalk';
 import _ from 'lodash';
+import markdown from 'markdown-it';
 
 import { Config } from './srv.js';
 import Mime from './mime.json'
@@ -12,13 +13,17 @@ import * as iter from 'jcake-utils/iter';
 
 const { default: jstempl, compile } = await import('../build.js');
 
+const md = markdown({ linkify: false, typographer: true, html: true, xhtmlOut: true, breaks: true, langPrefix: '', quotes: '“”‘’' });
+
 export async function resolve(path: string, roots: string[]): Promise<string> {
     if (!path)
         throw `Path is empty`;
 
     const segments = path.split(/[\/\\]/).filter(i => i && i.length > 0 && i !== '.');
 
-    for (const i of roots) {
+    for (const [i, origin] of roots.map(i => [i, i['origin']])) {
+
+
         const full = i.split('/').concat(segments);
 
         if (await fs.stat(full.join('/')).then(stat => !stat.isDirectory()).catch(() => false))
@@ -28,7 +33,8 @@ export async function resolve(path: string, roots: string[]): Promise<string> {
         else if (await fs.stat(full.concat(['/index.jsml']).join('/')).then(stat => !stat.isDirectory()).catch(() => false))
             // ideally, you'd treat .jsml files as static, and .nhp as preprocessed JSML files. But hey, it's still early days
             return full.concat(['/index.jsml']).join('/');
-
+        else if (await fs.stat(full.concat(['/index.md']).join('/')).then(stat => !stat.isDirectory()).catch(() => false))
+            return full.concat(['/index.md']).join('/');
     }
 
     return null;
@@ -59,27 +65,31 @@ export default async function serve(config: Config): Promise<http.Server> {
         let path = await resolve(url.pathname, config.roots);
 
         const cookies = _.fromPairs((req.headers?.cookie ?? '')?.split(';').map(i => i.split('=')));
+        const vars = {
+            method: req.method.toUpperCase(),
+            path: url.pathname,
+            query: url.searchParams,
+            headers: req.headers,
+            cookies: cookies,
+            body: body ?? null,
+        };
 
         if (path)
             try {
                 res.writeHead(200, { 'content-type': Mime[path.trim().split('.').pop().toLowerCase()] ?? 'text/plain', cookies: Object.entries(cookies).map(i => i.join('=')).join(',') });
 
                 if (['jsml', 'nhp'].includes(path?.split('.').pop().toLowerCase()))
-                    return Stream.Readable.from(compile(jstempl(await fs.readFile(path, 'utf8')), {
-                        method: req.method.toUpperCase(),
-                        path: url.pathname,
-                        query: url.searchParams,
-                        headers: req.headers,
-                        cookies: cookies,
-                        body: body ?? null,
-                    })).pipe(res);
+                    return Stream.Readable.from(compile(jstempl(await fs.readFile(path, 'utf8')), vars)).pipe(res);
+                else if (['md'].includes(path?.split('.').pop().toLowerCase()) && config.markdownTemplate)
+                    return Stream.Readable.from(compile(jstempl(await fs.readFile(config.markdownTemplate, 'utf8'), config.markdownTemplate), { ...vars, body: md.render(await fs.readFile(path, 'utf8')) })).pipe(res);
                 else if (path)
                     return fss.createReadStream(path).pipe(res);
+                else throw `Invalid path`;
 
             } catch (err) {
                 let _500: string = config?.errors[500] ? await resolve(config?.errors[500], config.roots) : null;
                 if (_500)
-                    return Stream.Readable.from(compile(jstempl(await fs.readFile(_500, 'utf8')), { err })).pipe(res.writeHead(500, { 'Content-Type': 'text/plain' }));
+                    return Stream.Readable.from(compile(jstempl(await fs.readFile(_500, 'utf8')), { err, ...vars })).pipe(res.writeHead(500, { 'Content-Type': 'text/plain' }));
                 else {
                     res.writeHead(500, { 'Content-type': 'text/plain' });
                     if (err instanceof Error)

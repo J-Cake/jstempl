@@ -23,6 +23,7 @@
     "html": "text/html",
     "jsml": "text/html",
     "nhp": "text/html",
+    "md": "text/html",
     "ico": "image/vnd.microsoft.icon",
     "ics": "text/calendar",
     "jar": "application/java-archive",

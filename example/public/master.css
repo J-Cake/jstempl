@@ -1,7 +1,9 @@
 :root, body {
     margin: 0;
     padding: 0;
-    
+}
+
+* {
     --sans-serif: "Raleway", sans-serif;
     --serif: "Rasa", serif
     --monospace: "Inconsolata", monospace;
@@ -9,9 +11,7 @@
     --foreground: #333;
     --background: #fff;
     --accent: #6a6;
-}
 
-* {
     box-sizing: border-box;
     color: var(--foreground);
     font-family: var(--sans-serif);

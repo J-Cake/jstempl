@@ -2,6 +2,8 @@
 html {
     head {
         title [Hello World]
+        
+        link rel = 'stylesheet' href = '/master.css';
     }
     body {
         h1 [Hi]
