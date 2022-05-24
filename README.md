@@ -40,7 +40,7 @@ The list of supported MIME types is:
 * `text/md`: Renders its contents as Markdown
 * `text/markdown`: Renders its contents as Markdown
 * `text/html+markdown`: Renders its contents as Markdown
-* `text/js+node`: Evaluates the given snippet in an isolated NodeJS context server-side. Analogous to PHP. Use the global `echo(text: string) => void` function to emit text into the page.
+* `text/js+node`: Evaluates the given snippet in an isolated NodeJS context server-side. Analogous to PHP. By `yield`ing an expression, it will be evaluated and templated into the output, analogous to PHP's `echo` statements.
 
 ### Expression Blocks
 Expression blocks (`( ... )`) are evaluated in the same isolated NodeJS context as `text/js+node` text blocks. Variables passed to the templater will be visible here as globals. 
@@ -58,6 +58,13 @@ Attributes can template variables, like ES6 template literals. Simply place an e
 
 ## Usage
 
+JSTempl has a simple command line interface, as well as a web server interface which automatically templates files and serves them to clients.
+
+Streaming over the command line interface will yield static files which can be served very quickly through programs such as NGinX or Apache. For simple sites, this is the recommended approach, 
+however for more complex interfaces, such as requiring database queries, the webserver can act like PHP with a nodejs backend, allowing you to perform database queries and template them directly into the response. See the documentation below
+
+### Streaming Templating
+
 The program is actually based around stdio. So there aren't any default file input arguments, as they are all used to pass variables to the templater. So you'll need to read files yourself.
 Ultimately this is much more freeing, as you can use this outside of the CLI. 
 
@@ -74,3 +81,13 @@ cat package.json | jq -r ".template" | xargs -I{} cat {} | ./jstempl page_title 
 ```
 
 This can be placed as a `template` script in your `package.json` file, or embedded into your build system however you see fit. 
+
+### Web Server
+
+The web-server can be invoked with the `nhp` command. It accepts the following paramters:
+
+    * `--port`/`-p`: The port to listen on. Defaults to `8080`.
+    * `--tls`: Enable TLS. pass `<key>,<cert>` as the following argument. (Not implemented yet)
+    * `--error`: The error page to use. Defaults to `error.html`. The following argument is the error code to use. The argument following it is any .nhp/.jsml file to use as the error page. Can be templated. the `--error` option can be given multiple times, where the last one provided **per error code** is used. 
+    * `--root`/`-I`: specify a directory from which to serve files. Defaults to $PWD. Can be passed multiple times, or as the default argument (first argument after `nhp`)
+    * `--no-parse-body`: Do not parse the incoming body, it can still be accessed through `body`, except it will be a string containing the body.
