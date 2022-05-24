@@ -1,6 +1,9 @@
 []
 $use template = 'example/include/template.jsml' {
     section id = 'body' {
+
+        $md file = 'example/public/test.md';
+
         p [text/js+node
             yield 'Hello World';
         ]
