@@ -7,7 +7,8 @@
         "build": "esbuild src/esm.ts --bundle --sourcemap --outfile=build/template.js --format=esm --platform=node --external:markdown-it",
         "build:standalone": "esbuild src/cjs.ts --bundle --sourcemap --outfile=build/template-standalone.cjs --platform=node",
         "build:srv": "esbuild src/srv/srv.ts --bundle --sourcemap --splitting --outdir=build/ --format=esm --platform=node --external:markdown-it --banner:js='#!/usr/bin/env node'",
-        "template": "node --enable-source-maps=true build/template-standalone.cjs"
+        "template": "node --enable-source-maps=true build/template-standalone.cjs",
+        "postinstall": "$npm_execpath build:srv && $npm_execpath link jstempl"
     },
     "bin": {
         "nhp": "build/srv.js",
