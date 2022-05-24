@@ -81,7 +81,7 @@ export default async function serve(config: Config): Promise<http.Server> {
                 if (['jsml', 'nhp'].includes(path?.split('.').pop().toLowerCase()))
                     return Stream.Readable.from(compile(jstempl(await fs.readFile(path, 'utf8')), vars)).pipe(res);
                 else if (['md'].includes(path?.split('.').pop().toLowerCase()) && config.markdownTemplate)
-                    return Stream.Readable.from(compile(jstempl(await fs.readFile(config.markdownTemplate, 'utf8'), config.markdownTemplate), { ...vars, body: md.render(await fs.readFile(path, 'utf8')) })).pipe(res);
+                    return Stream.Readable.from(compile(jstempl(await fs.readFile(config.markdownTemplate, 'utf8'), config.markdownTemplate), { ...vars, md: md.render(await fs.readFile(path, 'utf8')) })).pipe(res);
                 else if (path)
                     return fss.createReadStream(path).pipe(res);
                 else throw `Invalid path`;
