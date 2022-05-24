@@ -58,13 +58,17 @@ export const functions: Record<string, (tag: { tagName: string, hasBody: boolean
         // const template = await fs.readFile(flattenPath(tag.attributes.template, tag.attributes.template.startsWith('/') ? process.cwd() : tag.file), 'utf8');
         const template = await fs.readFile(tag.attributes.template, 'utf8');
 
-        const variables = _.merge({}, env, tag.hasBody ? await tag.children().then(res => res.filter(i => i)) : {}, tag.attributes);
+        const variables = _.merge({}, env, tag.hasBody ? { body: await tag.children().then(res => res.filter(i => i)) } : {}, tag.attributes);
 
         for await (const i of compile(parseJSML('\n' + template.trim()), variables))
             yield i;
     },
-    async *render(tag) {
-        return [];
+    async *md(tag) {
+        if (!('file' in tag.attributes))
+            throw `Required attribute 'file' not present on md`;
+        const file = await fs.readFile(tag.attributes.file, 'utf8');
+
+        yield md.render(file)
     }
 }
 
