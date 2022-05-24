@@ -58,7 +58,7 @@ export default async function serve(config: Config): Promise<http.Server> {
 
         let path = await resolve(url.pathname, config.roots);
 
-        const cookies = _.fromPairs(req.headers.cookie.split(';').map(i => i.split('=')));
+        const cookies = _.fromPairs((req.headers?.cookie ?? '')?.split(';').map(i => i.split('=')));
 
         if (path)
             try {
