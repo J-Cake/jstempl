@@ -70,7 +70,12 @@ export const functions: Record<string, (tag: { tagName: string, hasBody: boolean
         // const template = await fs.readFile(flattenPath(tag.attributes.template, tag.attributes.template.startsWith('/') ? process.cwd() : tag.file), 'utf8');
         const template = await fs.readFile(tag.attributes.template, 'utf8');
 
-        const variables = _.merge({}, env, tag.hasBody ? { body: await tag.children().then(res => res.filter(i => i)) } : {}, tag.attributes);
+        let name = 'content'; 
+
+        if ('as' in tag.attributes && typeof tag.attributes['as'] == 'string')
+            name = tag.attributes['as'];
+
+        const variables = _.merge({}, env, tag.hasBody ? { [name]: await tag.children().then(res => res.filter(i => i)) } : {}, tag.attributes);
 
         for await (const i of compile(parseJSML('\n' + template.trim()), variables))
             yield i;
