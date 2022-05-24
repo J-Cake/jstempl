@@ -5,12 +5,12 @@ import urllib from 'node:url';
 import chalk from 'chalk';
 import _ from 'lodash';
 
-import { Config } from './srv';
+import { Config } from './srv.js';
 import Mime from './mime.json'
-import * as parsers from './bodyParsers';
+import * as parsers from './bodyParsers.js';
 import * as iter from 'jcake-utils/iter';
 
-const { default: jstempl, compile } = await import('../build');
+const { default: jstempl, compile } = await import('../build.js');
 
 export async function resolve(path: string, roots: string[]): Promise<string> {
     if (!path)

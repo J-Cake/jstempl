@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 
-import Serve from "./http";
+import Serve from "./http.js";
 
 export type Config = {
     roots: string[],

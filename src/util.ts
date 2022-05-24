@@ -1,4 +1,4 @@
-import { Token, OutNestedToken, NestedToken } from "./build";
+import { Token, OutNestedToken, NestedToken } from "./build.js";
 
 export function* peekableIterator<T, R>(iterator: Iterable<T>, map: (i: T) => R, filter: (i: R) => boolean): Generator<[current: R, skip: () => R]> {
     const mapped = function* (iterator: Iterable<T>): Iterable<R> {

@@ -5,7 +5,7 @@ import markdown from 'markdown-it';
 import _ from 'lodash';
 import Iter, * as iter from 'jcake-utils/iter';
 
-import parseJSML, { compile, OutNestedToken } from './build';
+import parseJSML, { compile, OutNestedToken } from './build.js';
 
 const md = markdown({ linkify: false, typographer: true, html: true, xhtmlOut: true, breaks: true, langPrefix: '', quotes: '“”‘’' });
 

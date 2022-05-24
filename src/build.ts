@@ -2,8 +2,8 @@ import _ from 'lodash';
 import Iter, * as iter from 'jcake-utils/iter';
 import IterSync, * as iterSync from 'jcake-utils/iterSync';
 
-import { loaders, functions, global, createContext, evaluate, ctx } from './loaders';
-import { isExpr, isJSML, isTag, isText, peekableIterator } from './util';
+import { loaders, functions, global, createContext, evaluate, ctx } from './loaders.js';
+import { isExpr, isJSML, isTag, isText, peekableIterator } from './util.js';
 
 export type Token<T> = {
     type: string;
