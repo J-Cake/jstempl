@@ -49,9 +49,10 @@ async function collect(stream: Readable, format?: string): Promise<any> {
         return await parsers.json(stream);
     else if (format == 'application/x-www-form-urlencoded')
         return await parsers.xUrlEncoded(stream);
-    else if (format == 'multipart/form-data')
+    else if (format == 'multipart/form-data') {
+        console.error('Warning: multipart/form-data potentially yields large amounts of data. It is recommended to handle this yourself');
         return await parsers.multipartForm(stream);
-    else
+    } else
         return iter.collect(stream).then(res => res.join(''));
 }
 

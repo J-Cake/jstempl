@@ -2,9 +2,10 @@
 
 ## [v1.1.3] - 25.05.22
 ### Added
- - `$md` template function to render markdown files hassle-free
- - `$out` template function to use templates in reverse. Specify a parent template file, stead of a child template file. See the docs for more info.
- - You can now specify templates for markdown files with the `--markdown` flag. See the docs for more info.
+ - `$md` [template function to render markdown files hassle-free](https://github.com/J-Cake/jstempl/wiki/Templating-Functions#md-file-string).
+ - `$use` [template function to use templates in reverse. Specify a parent template file, stead of a child template file](https://github.com/J-Cake/jstempl/wiki/Templating-Functions#usetemplate-string-as-string). 
+ - `$def` [template function to define a template](https://github.com/J-Cake/jstempl/wiki/Custom-Templating-Functions)
+ - You can now specify templates for markdown files with the [`--markdown` flag](https://github.com/J-Cake/jstempl/wiki/CLI).
 
 ### Fixed
  - `$include` template function now correctly passes it's arguments to the included template.
