@@ -1,0 +1,6 @@
+{
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-action.json": "file:///home/jcake/Code/Rubbish/gh-actions-pages-test/.github/workspaces/build.yaml",
+        "https://json.schemastore.org/github-workflow.json": "file:///home/jcake/Code/Rubbish/gh-actions-pages-test/.github/workflows/build.yaml"
+    }
+}

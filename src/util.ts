@@ -1,4 +1,4 @@
-import { Token, OutNestedToken, NestedToken } from "./build";
+import { Token, OutNestedToken, NestedToken } from "./build.js";
 
 export function* peekableIterator<T, R>(iterator: Iterable<T>, map: (i: T) => R, filter: (i: R) => boolean): Generator<[current: R, skip: () => R]> {
     const mapped = function* (iterator: Iterable<T>): Iterable<R> {
@@ -43,7 +43,7 @@ export async function* concatIterator<T>(...args: Array<Iterable<T> | AsyncItera
             yield j;
 }
 
-export const isTag = (x: Token<any>): x is Token<{ tagName: string, hasBody: boolean, attributes: { [x in string]: string }, children?: OutNestedToken }> => x.type == 'tag';
+export const isTag = (x: Token<any>): x is Token<{ tagName: string, hasBody: boolean, attributes: { [x in string]: string }, children?: (depth?: number) => Promise<string[]> }> => x.type == 'tag';
 export const isJSML = (x: Token<any>): x is Token<NestedToken> => x.type == 'jsml';
 export const isText = (x: Token<any>): x is Token<string> => x.type == 'text';
 export const isExpr = (x: Token<any>): x is Token<string> => x.type == 'expr';
