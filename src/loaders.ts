@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import module from 'node:module';
 import vm from 'node:vm';
 import util from 'node:util';
 import markdown from 'markdown-it';
@@ -97,6 +98,7 @@ export const global = {
         delete: 'DELETE'
     },
     renderMd: text => md.render(text),
+    require: module.createRequire(import.meta.url)
 };
 
 export function createContext(variables: { [name: string]: any }): vm.Context {

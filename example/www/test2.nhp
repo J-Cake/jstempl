@@ -1,3 +1,11 @@
 $use template = 'example/include/template.jsml' {
     $test name = 'Isaac';
 }
+
+[text/js+node
+    const cp = require('node:child_process');
+    const data = cp.execSync('echo "Hello, World!"', { encoding: 'utf8' });
+    yield data;
+]
+
+[]
