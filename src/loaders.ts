@@ -98,7 +98,8 @@ export const global = {
         delete: 'DELETE'
     },
     renderMd: text => md.render(text),
-    require: module.createRequire(import.meta.url)
+    require: (path: string) => import(path),
+    cjs_require: module.createRequire(import.meta.url),
 };
 
 export function createContext(variables: { [name: string]: any }): vm.Context {
