@@ -45,14 +45,6 @@ export const flattenPath = function (path: string, root: string) {
 var asyncGen: (new (...args: string[]) => typeof functions[string]) = (async function* () { }).constructor as any;
 export const functions: Record<string, (tag: { tagName: string, hasBody: boolean, attributes: { [x in string]: string }, children?: (depth?: number) => Promise<string[]> }, env: { [key in string]: any }) => AsyncGenerator<string>> = {
     async *include(tag, env) {
-        // if (!('file' in tag.attributes))
-        //     throw `Required attribute 'file' not present on include`;
-        // // const file = await fs.readFile(flattenPath(tag.attributes.file, tag.attributes.file.startsWith('/') ? process.cwd() : tag.file), 'utf8');
-        // const file = await fs.readFile(tag.attributes.file, 'utf8');
-
-        // for await (const i of compile(parseJSML('\n' + file.trim()), _.merge({}, tag.attributes, env)))
-        //     yield i;
-
         if ('content_type' in tag.attributes && tag.attributes.content_type !== 'text/jsml') {
             const file = await fs.readFile(tag.attributes.file, 'utf8');
 
