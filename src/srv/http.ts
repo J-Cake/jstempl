@@ -103,6 +103,8 @@ export default async function serve(config: Config): Promise<http.Server> {
         else if (config?.errors[404]) {
             const _404 = await resolve(config?.errors[404], [process.cwd()]);
 
+            res.writeHead(404, { 'content-type': Mime[_404.trim().split('.').pop().toLowerCase()] ?? 'text/plain', cookies: Object.entries(cookies).map(i => i.join('=')).join(',') });
+
             if (_404)
                 if (_404.endsWith('.md') && config.markdownTemplate)
                     return Stream.Readable.from(compile(jstempl('\n[]\n' + await fs.readFile(config.markdownTemplate, 'utf8'), config.markdownTemplate), { ...vars, md: md.render(await fs.readFile(_404, 'utf8')) })).pipe(res);
