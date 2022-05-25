@@ -80,9 +80,9 @@ export default async function serve(config: Config): Promise<http.Server> {
                 res.writeHead(200, { 'content-type': Mime[path.trim().split('.').pop().toLowerCase()] ?? 'text/plain', cookies: Object.entries(cookies).map(i => i.join('=')).join(',') });
 
                 if (['jsml', 'nhp'].includes(path?.split('.').pop().toLowerCase()))
-                    return Stream.Readable.from(compile(jstempl(await fs.readFile(path, 'utf8')), vars)).pipe(res);
+                    return Stream.Readable.from(compile(jstempl('\n[]\n' + await fs.readFile(path, 'utf8')), vars)).pipe(res);
                 else if (['md'].includes(path?.split('.').pop().toLowerCase()) && config.markdownTemplate)
-                    return Stream.Readable.from(compile(jstempl(await fs.readFile(config.markdownTemplate, 'utf8'), config.markdownTemplate), { ...vars, md: md.render(await fs.readFile(path, 'utf8')) })).pipe(res);
+                    return Stream.Readable.from(compile(jstempl('\n[]\n' + await fs.readFile(config.markdownTemplate, 'utf8'), config.markdownTemplate), { ...vars, md: md.render(await fs.readFile(path, 'utf8')) })).pipe(res);
                 else if (path)
                     return fss.createReadStream(path).pipe(res);
                 else throw `Invalid path`;
@@ -90,7 +90,7 @@ export default async function serve(config: Config): Promise<http.Server> {
             } catch (err) {
                 let _500: string = config?.errors[500] ? await resolve(config?.errors[500], config.roots) : null;
                 if (_500)
-                    return Stream.Readable.from(compile(jstempl(await fs.readFile(_500, 'utf8')), { err, ...vars })).pipe(res.writeHead(500, { 'Content-Type': 'text/plain' }));
+                    return Stream.Readable.from(compile(jstempl('\n[]\n' + await fs.readFile(_500, 'utf8')), { err, ...vars })).pipe(res.writeHead(500, { 'Content-Type': 'text/plain' }));
                 else {
                     res.writeHead(500, { 'Content-type': 'text/plain' });
                     if (err instanceof Error)
@@ -101,14 +101,19 @@ export default async function serve(config: Config): Promise<http.Server> {
             }
 
         else if (config?.errors[404]) {
-            const _404 = await resolve(config?.errors[404], config.roots);
+            const _404 = await resolve(config?.errors[404], [process.cwd()]);
+
             if (_404)
-                return Stream.Readable.from(compile(jstempl(await fs.readFile(_404, 'utf8')), {})).pipe(res.writeHead(404, { 'Content-Type': 'text/plain' }));
+                if (_404.endsWith('.md') && config.markdownTemplate)
+                    return Stream.Readable.from(compile(jstempl('\n[]\n' + await fs.readFile(config.markdownTemplate, 'utf8'), config.markdownTemplate), { ...vars, md: md.render(await fs.readFile(_404, 'utf8')) })).pipe(res);
+                else if (_404.endsWith('.jsml') || _404.endsWith('.nhp'))
+                    return Stream.Readable.from(compile(jstempl('\n[]\n' + await fs.readFile(_404, 'utf8')), {})).pipe(res.writeHead(404, { 'Content-Type': 'text/html' }));
+                else
+                    return fss.createReadStream(_404).pipe(res.writeHead(404, { 'Content-Type': 'text/html' }));
             else
                 return res.writeHead(404, { 'Content-Type': 'text/plain' }).end('404: Not found');
-        }
-
-        res.writeHead(404, { 'Content-Type': 'text/plain' }).end('404: Not found');
+        } else
+            return res.writeHead(404, { 'Content-Type': 'text/plain' }).end('404: Not found');
 
     }).listen(config.port, () => console.log(chalk.green(`Server listening on port ${chalk.yellow(config.port)}`)));
 }

@@ -54,7 +54,7 @@ export const functions: Record<string, (tag: { tagName: string, hasBody: boolean
                 throw `Required attribute 'file' not present on include`;
             const file = await fs.readFile(tag.attributes.file, 'utf8');
 
-            for await (const i of compile(parseJSML('\n' + file.trim()), _.merge({}, tag.attributes, env)))
+            for await (const i of compile(parseJSML('\n[]\n' + file.trim()), _.merge({}, tag.attributes, env)))
                 yield i;
         }
     },
@@ -71,7 +71,7 @@ export const functions: Record<string, (tag: { tagName: string, hasBody: boolean
 
         const variables = _.merge({}, env, tag.hasBody ? { [name]: await tag.children().then(res => res.filter(i => i)) } : {}, tag.attributes);
 
-        for await (const i of compile(parseJSML('\n' + template.trim()), variables))
+        for await (const i of compile(parseJSML('\n[]\n' + template.trim()), variables))
             yield i;
     },
     async *md(tag) {
@@ -84,9 +84,8 @@ export const functions: Record<string, (tag: { tagName: string, hasBody: boolean
     async *def(tag) {
         if (!('name' in tag.attributes))
             throw `Required attribute 'name' not present on def`;
-            
-        if (!(tag.attributes['name'] in functions))
-            functions[tag.attributes['name']] = new asyncGen('tag', 'env', await tag.children().then(res => res.filter(i => i).join('')));
+        
+        functions[tag.attributes['name']] = new asyncGen('tag', 'env', await tag.children().then(res => res.filter(i => i).join('')));
     }
 }
 

@@ -1,0 +1,5 @@
+$use template = 'example/include/template.jsml' as = 'body' {
+    article {
+        [text/js+node yield* md;]
+    }
+}

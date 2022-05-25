@@ -10,6 +10,9 @@
 ### Fixed
  - `$include` template function now correctly passes it's arguments to the included template.
  - `$include` now only renders its content as JSML if the `content_type` argument is set to `text/jsml`. If set to a markdown MIME type, will render as Markdown, otherwise plain text.
+ - error pages weren't producing the expected output.
+
+### Changed
 
 ## [v1.0.1] - 2022-05-24
 ### Added

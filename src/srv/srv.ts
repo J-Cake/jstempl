@@ -59,15 +59,13 @@ while (argv.length > 0) {
     }
 }
 
-export const config: Config = {
+Serve({
     roots: (!args.roots || args.roots.length <= 0) ? [process.cwd()] : args.roots,
     port: (!args.port || args.port < 1024) ? (args.key && args.cert) ? 443 : 80 : args.port,
     useChildPrerenderer: args.useChildPrerenderer,
-    errors: {},
+    errors: args.errors,
     doNotParseBody: args.doNotParseBody,
     markdownTemplate: args.markdownTemplate,
     key: args.key,
     cert: args.cert
-};
-
-Serve(config);
+});

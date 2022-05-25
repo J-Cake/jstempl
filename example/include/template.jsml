@@ -4,6 +4,7 @@ html {
         title [Hello World]
         
         link rel = 'stylesheet' href = '/master.css';
+        meta charset = 'utf8';
     }
     body {
         h1 [Hi]
@@ -13,8 +14,6 @@ html {
             yield tag.attributes['name'];
             yield '!';
         ]
-
-        []
 
         [text/js+node yield* body]
     }
