@@ -2,7 +2,7 @@
     "name": "jstempl",
     "type": "module",
     "main": "build/template.js",
-    "version": "v1.0.1",
+    "version": "v1.1.3",
     "scripts": {
         "build": "esbuild src/esm.ts --bundle --sourcemap --outfile=build/template.js --format=esm --platform=node --external:markdown-it",
         "build:standalone": "esbuild src/cjs.ts --bundle --sourcemap --outfile=build/template-standalone.cjs --platform=node",

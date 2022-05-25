@@ -6,6 +6,7 @@ import _ from 'lodash';
 import Iter, * as iter from 'jcake-utils/iter';
 
 import parseJSML, { compile, OutNestedToken } from './build.js';
+import { accessSync } from 'node:fs';
 
 const md = markdown({ linkify: false, typographer: true, html: true, xhtmlOut: true, breaks: true, langPrefix: '', quotes: '“”‘’' });
 
@@ -41,6 +42,7 @@ export const flattenPath = function (path: string, root: string) {
     return ['', ...root.split('/').filter(i => i != '.' && i.length > 0), ...segments].join('/');
 };
 
+var asyncGen: (new (...args: string[]) => typeof functions[string]) = (async function* () { }).constructor as any;
 export const functions: Record<string, (tag: { tagName: string, hasBody: boolean, attributes: { [x in string]: string }, children?: (depth?: number) => Promise<string[]> }, env: { [key in string]: any }) => AsyncGenerator<string>> = {
     async *include(tag, env) {
         // if (!('file' in tag.attributes))
@@ -70,7 +72,7 @@ export const functions: Record<string, (tag: { tagName: string, hasBody: boolean
         // const template = await fs.readFile(flattenPath(tag.attributes.template, tag.attributes.template.startsWith('/') ? process.cwd() : tag.file), 'utf8');
         const template = await fs.readFile(tag.attributes.template, 'utf8');
 
-        let name = 'content'; 
+        let name = 'content';
 
         if ('as' in tag.attributes && typeof tag.attributes['as'] == 'string')
             name = tag.attributes['as'];
@@ -86,6 +88,13 @@ export const functions: Record<string, (tag: { tagName: string, hasBody: boolean
         const file = await fs.readFile(tag.attributes.file, 'utf8');
 
         yield md.render(file)
+    },
+    async *def(tag) {
+        if (!('name' in tag.attributes))
+            throw `Required attribute 'name' not present on def`;
+            
+        if (!(tag.attributes['name'] in functions))
+            functions[tag.attributes['name']] = new asyncGen('tag', 'env', await tag.children().then(res => res.filter(i => i).join('')));
     }
 }
 

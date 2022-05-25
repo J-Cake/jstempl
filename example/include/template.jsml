@@ -8,6 +8,14 @@ html {
     body {
         h1 [Hi]
 
+        $def name = 'test' [text/js
+            yield 'Hello, ';
+            yield tag.attributes['name'];
+            yield '!';
+        ]
+
+        []
+
         [text/js+node yield* body]
     }
 }

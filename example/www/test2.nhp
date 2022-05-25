@@ -1,0 +1,3 @@
+$use template = 'example/include/template.jsml' {
+    $test name = 'Isaac';
+}

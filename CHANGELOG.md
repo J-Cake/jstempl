@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.1.3] - 25.05.22
+### Added
+ - `$md` template function to render markdown files hassle-free
+ - `$out` template function to use templates in reverse. Specify a parent template file, stead of a child template file. See the docs for more info.
+ - You can now specify templates for markdown files with the `--markdown` flag. See the docs for more info.
+
+### Fixed
+ - `$include` template function now correctly passes it's arguments to the included template.
+ - `$include` now only renders its content as JSML if the `content_type` argument is set to `text/jsml`. If set to a markdown MIME type, will render as Markdown, otherwise plain text.
+
 ## [v1.0.1] - 2022-05-24
 ### Added
  - PHP-like HTTP server

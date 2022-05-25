@@ -4,6 +4,8 @@ $use template = 'example/include/template.jsml' {
 
         $md file = 'example/public/test.md';
 
+        $test name = 'Jake';
+
         p [text/js+node
             yield 'Hello World';
         ]
