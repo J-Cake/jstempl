@@ -27,7 +27,7 @@ jobs:
       - run: pnpm exec mkjson build/template.cjs build/template.mjs build/srv.js build/package.json
       - uses: actions/upload-artifact@v3
         with:
-          name: template.cjs
+          name: template.js
           path: build/template.cjs
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -56,7 +56,7 @@ jobs:
       - run: npm install -g pnpm
       - run: pnpm install
       - run: pnpm exec mkjson build/template.cjs build/template.mjs build/srv.js build/package.json
-      - run: pnpm publish --registry=https://npm.pkg.github.com
+      - run: pnpm publish --registry=https://npm.pkg.github.com --no-git-checks
         working-directory: ./build
         env:
           NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
