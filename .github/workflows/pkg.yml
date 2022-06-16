@@ -1,0 +1,59 @@
+name: Build
+on:
+  pull_request:
+    branches:
+      - master
+      - main
+      
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+          registry-url: 'https://npm.pkg.github.com'
+          # Defaults to the user or organization that owns the workflow file
+      - run: |
+          echo //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }} > $NPM_CONFIG_USERCONFIG;
+          echo @j-cake:registry=https://npm.pkg.github.com >> $NPM_CONFIG_USERCONFIG
+          cat $NPM_CONFIG_USERCONFIG
+      - run: npm install -g pnpm
+      - run: pnpm install
+      - run: pnpm exec mkjson build/template.cjs build/template.mjs build/srv.js build/package.json
+      - uses: actions/upload-artifact@v3
+        with:
+          name: template.js
+          path: build/template.cjs
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          title: "Template"
+          prerelease: false
+          files: |
+            build/template.cjs
+  pkg:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+          registry-url: 'https://npm.pkg.github.com'
+          # Defaults to the user or organization that owns the workflow file
+      - run: |
+          echo //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }} > $NPM_CONFIG_USERCONFIG;
+          echo @j-cake:registry=https://npm.pkg.github.com >> $NPM_CONFIG_USERCONFIG
+          cat $NPM_CONFIG_USERCONFIG
+      - run: npm install -g pnpm
+      - run: pnpm install
+      - run: pnpm exec mkjson build/template.cjs build/template.mjs build/srv.js build/package.json
+      - run: pnpm publish --registry=https://npm.pkg.github.com --no-git-checks
+        working-directory: ./build
+        env:
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

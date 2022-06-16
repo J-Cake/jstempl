@@ -1,6 +1,6 @@
 import * as stream from 'node:stream';
 import _ from 'lodash';
-import Iter, * as iter from 'jcake-utils/iter';
+import Iter, * as iter from '@j-cake/jcake-utils/iter';
 
 export async function json<T>(body: stream.Readable): Promise<T> {
     const data = await iter.collect(body);

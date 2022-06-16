@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import util from 'node:util';
 import markdown from 'markdown-it';
 import _ from 'lodash';
-import Iter, * as iter from 'jcake-utils/iter';
+import Iter, * as iter from '@j-cake/jcake-utils/iter';
 
 import parseJSML, { compile, OutNestedToken } from './build.js';
 import { accessSync } from 'node:fs';
