@@ -1,5 +1,5 @@
 {
-    "name": "jstempl",
+    "name": "@j-cake/jstempl",
     "type": "module",
     "main": "build/template.js",
     "version": "v1.1.4",
