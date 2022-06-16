@@ -9,7 +9,7 @@ import markdown from 'markdown-it';
 import { Config } from './srv.js';
 import Mime from './mime.json'
 import * as parsers from './bodyParsers.js';
-import * as iter from 'jcake-utils/iter';
+import * as iter from '@j-cake/jcake-utils/iter';
 
 const { default: jstempl, compile } = await import('../build.js');
 

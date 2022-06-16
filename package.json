@@ -2,13 +2,9 @@
     "name": "jstempl",
     "type": "module",
     "main": "build/template.js",
-    "version": "v1.1.3",
+    "version": "v1.1.4",
     "scripts": {
-        "build": "esbuild src/esm.ts --bundle --sourcemap --outfile=build/template.js --format=esm --platform=node --external:markdown-it",
-        "build:standalone": "esbuild src/cjs.ts --bundle --sourcemap --outfile=build/template-standalone.cjs --platform=node",
-        "build:srv": "esbuild src/srv/srv.ts --bundle --sourcemap --splitting --outdir=build/ --format=esm --platform=node --external:markdown-it --banner:js='#!/usr/bin/env node'",
-        "template": "node --enable-source-maps=true build/template-standalone.cjs",
-        "postinstall": "$npm_execpath build:srv"
+        "template": "node --enable-source-maps=true build/template-standalone.cjs"
     },
     "bin": {
         "nhp": "build/srv.js",
@@ -16,7 +12,7 @@
     },
     "dependencies": {
         "chalk": "latest",
-        "jcake-utils": "github:J-Cake/jcake-utils",
+        "@j-cake/jcake-utils": "latest",
         "lodash": "latest",
         "markdown-it": "latest"
     },
@@ -25,6 +21,37 @@
         "@types/markdown-it": "latest",
         "@types/node": "latest",
         "esbuild": "latest",
-        "typescript": "latest"
+        "typescript": "latest",
+        "@j-cake/mkjson": "latest"
+    },
+    "targets": {
+        "build/template.cjs": {
+            "dependencies": ["src/cjs.ts", "src/esm.ts", "src/build.ts", "src/loaders.ts", "src/util.ts"],
+            "run": [
+                "mkdir -p build",
+                "esbuild src/cjs.ts --bundle --sourcemap --outfile=build/template.cjs --platform=node"
+            ]
+        },
+        "build/template.mjs": {
+            "dependencies": ["src/esm.ts", "src/esm.ts", "src/build.ts", "src/loaders.ts", "src/util.ts"],
+            "run": [
+                "mkdir -p build",
+                "esbuild src/cjs.ts --bundle --sourcemap --outfile=build/template.mjs --platform=node"
+            ]
+        },
+        "build/srv.js": {
+            "dependencies": ["src/*.ts", "src/*.json"],
+            "run": [
+                "mkdir -p build",
+                "esbuild src/srv/srv.ts --bundle --sourcemap --splitting --outdir=build/ --format=esm --platform=node --external:markdown-it --banner:js='#!/usr/bin/env node'"
+            ]
+        },
+        "build/package.json": {
+            "dependencies": ["package.json", "tsconfig.json"],
+            "run": [
+                "mkdir -p build",
+                "cat package.json | jq -r '{name, version, type, scripts} + {bin: {nhp: \"srv.js\", template: \"template.mjs\"}, dependencies: {\"markdown-it\": .dependencies[\"markdown-it\"]}}' > build/package.json"
+            ]
+        }
     }
 }
