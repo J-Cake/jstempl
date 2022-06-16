@@ -25,7 +25,7 @@ jobs:
       - run: npm install -g pnpm
       - run: pnpm install
       - run: pnpm exec mkjson build/template.cjs build/template.mjs build/srv.js build/package.json
-      - uses: actions/upload-artifact@v3t
+      - uses: actions/upload-artifact@v3
         with:
           name: template.cjs
           path: build/template.cjs
