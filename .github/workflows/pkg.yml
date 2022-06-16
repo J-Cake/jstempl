@@ -6,7 +6,32 @@ on:
       - main
       
 jobs:
-  build:
+  release:
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: read
+      packages: write 
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+      - run: npm install -g pnpm
+      - run: pnpm install
+      - run: pnpm exec mkjson build/template.cjs build/template.mjs build/srv.js build/package.json
+      - uses: actions/upload-artifact@v3
+        with:
+          name: template.cjs
+          path: build/template.cjs
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          title: "Template"
+          prerelease: false
+          files: |
+            build/template.cjs
+  pkg:
     runs-on: ubuntu-latest
     permissions: 
       contents: read
@@ -25,18 +50,6 @@ jobs:
       - run: npm install -g pnpm
       - run: pnpm install
       - run: pnpm exec mkjson build/template.cjs build/template.mjs build/srv.js build/package.json
-      - uses: actions/upload-artifact@v3
-        with:
-          name: template.cjs
-          path: build/template.cjs
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          title: "Template"
-          prerelease: false
-          files: |
-            build/template.cjs
       - run: pnpm publish --registry=https://npm.pkg.github.com
         working-directory: ./build
         env:
