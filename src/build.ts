@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import Iter, * as iter from 'jcake-utils/iter';
-import IterSync, * as iterSync from 'jcake-utils/iterSync';
+import Iter, * as iter from '@j-cake/jcake-utils/iter';
+import IterSync, * as iterSync from '@j-cake/jcake-utils/iterSync';
 
 import { loaders, functions, global, createContext, evaluate, ctx } from './loaders.js';
 import { isExpr, isJSML, isTag, isText, peekableIterator } from './util.js';
