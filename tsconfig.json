@@ -8,10 +8,10 @@
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "rootDir": "src",
         "outDir": "build/ts",
         "declaration": true,
         "declarationDir": "build/lib",
     },
-    "exclude": ["build", "node_modules"]
+    "exclude": ["build", "node_modules"],
+    "include": ["src"]
 }

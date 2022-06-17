@@ -4,10 +4,12 @@
     "main": "build/template.js",
     "version": "v1.1.4",
     "scripts": {
-        "template": "node --enable-source-maps=true build/template-standalone.cjs"
+        "template": "node --enable-source-maps=true build/template-standalone.cjs",
+        "build:srv": "mkjson build/srv.js",
+        "build:template": "mkjson build/template.?js"
     },
     "bin": {
-        "nhp": "build/srv.js",
+        "nhp": "build/run.js",
         "template": "build/template.js"
     },
     "dependencies": {
@@ -26,31 +28,32 @@
     },
     "targets": {
         "build/template.cjs": {
-            "dependencies": ["src/cjs.ts", "src/esm.ts", "src/build.ts", "src/loaders.ts", "src/util.ts"],
+            "dependencies": ["src/jstempl/cjs.ts", "src/jstempl/esm.ts", "src/build.ts", "src/loaders.ts", "src/util.ts"],
             "run": [
                 "mkdir -p build",
                 "esbuild src/cjs.ts --bundle --sourcemap --outfile=build/template.cjs --platform=node"
             ]
         },
         "build/template.mjs": {
-            "dependencies": ["src/esm.ts", "src/esm.ts", "src/build.ts", "src/loaders.ts", "src/util.ts"],
+            "dependencies": ["src/jstempl/esm.ts", "src/jstempl/esm.ts", "src/build.ts", "src/loaders.ts", "src/util.ts"],
             "run": [
                 "mkdir -p build",
                 "esbuild src/cjs.ts --bundle --sourcemap --outfile=build/template.mjs --platform=node"
             ]
         },
         "build/srv.js": {
-            "dependencies": ["src/*.ts", "src/*.json"],
+            "dependencies": ["src/*.ts", "src/*.json", "src/nhp/run.js"],
             "run": [
                 "mkdir -p build",
-                "esbuild src/srv/srv.ts --bundle --sourcemap --splitting --outdir=build/ --format=esm --platform=node --external:markdown-it --banner:js='#!/usr/bin/env node'"
+                "esbuild src/nhp/main.ts --bundle --sourcemap --splitting --outdir=build/ --format=esm --platform=node --external:markdown-it --banner:js='#!/usr/bin/env node'",
+                "ln -f src/nhp/run.js build/nhp.js"
             ]
         },
         "build/package.json": {
             "dependencies": ["package.json", "tsconfig.json"],
             "run": [
                 "mkdir -p build",
-                "cat package.json | jq -r '{name, version, type, scripts} + {bin: {nhp: \"srv.js\", template: \"template.mjs\"}, dependencies: {\"markdown-it\": .dependencies[\"markdown-it\"]}}' > build/package.json"
+                "cat package.json | jq -r '{name, version, type, scripts} + {bin: {nhp: \"nhp.js\", template: \"template.mjs\"}, dependencies: {\"markdown-it\": .dependencies[\"markdown-it\"]}}' > build/package.json"
             ]
         }
     }

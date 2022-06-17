@@ -6,12 +6,13 @@ import chalk from 'chalk';
 import _ from 'lodash';
 import markdown from 'markdown-it';
 
-import { Config } from './srv.js';
+import { Config } from './main.js';
 import Mime from './mime.json'
 import * as parsers from './bodyParsers.js';
 import * as iter from '@j-cake/jcake-utils/iter';
+import { log } from './log.js';
 
-const { default: jstempl, compile } = await import('../build.js');
+const { default: jstempl, compile } = await import('../jstempl/jsml/build.js');
 
 const md = markdown({ linkify: false, typographer: true, html: true, xhtmlOut: true, breaks: true, langPrefix: '', quotes: '“”‘’' });
 
@@ -84,7 +85,7 @@ export default async function serve(config: Config): Promise<http.Server> {
                 else if (['md'].includes(path?.split('.').pop().toLowerCase()) && config.markdownTemplate)
                     return Stream.Readable.from(compile(jstempl('\n[]\n' + await fs.readFile(config.markdownTemplate, 'utf8'), config.markdownTemplate), { ...vars, md: md.render(await fs.readFile(path, 'utf8')) })).pipe(res);
                 else if (path)
-                    return fss.createReadStream(path).pipe(res);
+                    return fss.createReadStream(path).pipe(res.writeHead(304));
                 else throw `Invalid path`;
 
             } catch (err) {
@@ -117,5 +118,6 @@ export default async function serve(config: Config): Promise<http.Server> {
         } else
             return res.writeHead(404, { 'Content-Type': 'text/plain' }).end('404: Not found');
 
-    }).listen(config.port, () => console.log(chalk.green(`Server listening on port ${chalk.yellow(config.port)}`)));
+    // }).listen(config.port, () => console.log(chalk.green(`Server listening on port ${chalk.yellow(config.port)}`)));
+    }).listen(config.port, () => log.info(`Server listening on port ${chalk.yellow(config.port)}`));
 }

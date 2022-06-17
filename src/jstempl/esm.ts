@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import parseJSML, { compile } from './build.js';
-import { collect } from './util.js';
+import parseJSML, { compile } from './jsml/build.js';
+import { collect } from './jsml/util.js';
 
 const input = '\n' + Buffer.concat(await collect(process.stdin)).toString('utf-8').trim();
 const vars = _.chain(process.argv.slice(2))
